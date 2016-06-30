@@ -56,8 +56,10 @@ $win32_os = Get-CimInstance Win32_OperatingSystem
 $win32_cs = Get-CimInstance Win32_ComputerSystem
 $win32_bios = Get-CimInstance Win32_Bios
 $win32_cpu = Get-CimInstance Win32_Processor
-If ($win32_cpu -is [array]) { # multi-socket, pick first
-    $win32_cpu = $win32_cpu[0]
+$temp = @()
+If ($win32_cpu -isnot [array]) {
+    $temp = $win32_cpu
+    $win32_cpu = $temp
 }
 
 $ip_props = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties()
@@ -85,9 +87,13 @@ foreach ($adapter in $ActiveNetcfg)
 }
 
 $cpu_list = @( )
-for ($i=1; $i -le ($win32_cpu.NumberOfLogicalProcessors / $win32_cs.NumberOfProcessors); $i++) {
-    $cpu_list += $win32_cpu.Manufacturer
-    $cpu_list += $win32_cpu.Name
+$logicalProcessors = 0
+$cores = 0
+for ($i=0; $i -lt $win32_cs.NumberOfProcessors; $i++) {
+    $cpu_list += $win32_cpu[$i].Manufacturer.Trim()
+    $cpu_list += $win32_cpu[$i].Name.Trim()
+    $logicalProcessors += $win32_cpu[$i].NumberOfLogicalProcessors
+    $cores += $win32_cpu[$i].NumberOfCores
 }
 
 Set-Attr $result.ansible_facts "ansible_interfaces" $formattednetcfg
@@ -99,10 +105,10 @@ Set-Attr $result.ansible_facts "ansible_bios_version" $win32_bios.SMBIOSBIOSVers
 Set-Attr $result.ansible_facts "ansible_hostname" $env:COMPUTERNAME
 Set-Attr $result.ansible_facts "ansible_fqdn" ($ip_props.Hostname + "." + $ip_props.DomainName)
 Set-Attr $result.ansible_facts "ansible_processor" $cpu_list
-Set-Attr $result.ansible_facts "ansible_processor_cores" $win32_cpu.NumberOfCores
+Set-Attr $result.ansible_facts "ansible_processor_cores" $cores
 Set-Attr $result.ansible_facts "ansible_processor_count" $win32_cs.NumberOfProcessors
-Set-Attr $result.ansible_facts "ansible_processor_threads_per_core" ($win32_cpu.NumberOfLogicalProcessors / $win32_cs.NumberOfProcessors / $win32_cpu.NumberOfCores)
-Set-Attr $result.ansible_facts "ansible_processor_vcpus" ($win32_cpu.NumberOfLogicalProcessors / $win32_cs.NumberOfProcessors)
+Set-Attr $result.ansible_facts "ansible_processor_threads_per_core" ($logicalProcessors / $win32_cs.NumberOfProcessors / $cores)
+Set-Attr $result.ansible_facts "ansible_processor_vcpus" ($logicalProcessors)
 Set-Attr $result.ansible_facts "ansible_product_name" $win32_cs.Model.Trim()
 Set-Attr $result.ansible_facts "ansible_product_serial" $win32_bios.SerialNumber
 #Set-Attr $result.ansible_facts "ansible_product_version" ([string] $win32_cs.SystemFamily)
