@@ -107,7 +107,7 @@ Set-Attr $result.ansible_facts "ansible_fqdn" ($ip_props.Hostname + "." + $ip_pr
 Set-Attr $result.ansible_facts "ansible_processor" $cpu_list
 Set-Attr $result.ansible_facts "ansible_processor_cores" $cores
 Set-Attr $result.ansible_facts "ansible_processor_count" $win32_cs.NumberOfProcessors
-Set-Attr $result.ansible_facts "ansible_processor_threads_per_core" ($logicalProcessors / $win32_cs.NumberOfProcessors / $cores)
+Set-Attr $result.ansible_facts "ansible_processor_threads_per_core" ($logicalProcessors / $cores)
 Set-Attr $result.ansible_facts "ansible_processor_vcpus" ($logicalProcessors)
 Set-Attr $result.ansible_facts "ansible_product_name" $win32_cs.Model.Trim()
 Set-Attr $result.ansible_facts "ansible_product_serial" $win32_bios.SerialNumber
