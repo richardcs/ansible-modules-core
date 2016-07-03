@@ -56,10 +56,8 @@ $win32_os = Get-CimInstance Win32_OperatingSystem
 $win32_cs = Get-CimInstance Win32_ComputerSystem
 $win32_bios = Get-CimInstance Win32_Bios
 $win32_cpu = Get-CimInstance Win32_Processor
-$temp = @()
 If ($win32_cpu -isnot [array]) {
-    $temp = $win32_cpu
-    $win32_cpu = $temp
+    $win32_cpu = @($win32_cpu)
 }
 
 $ip_props = [System.Net.NetworkInformation.IPGlobalProperties]::GetIPGlobalProperties()
