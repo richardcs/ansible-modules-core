@@ -213,7 +213,7 @@ $winrm_cert_expirations = $winrm_cert_expiry | Sort-Object NotAfter
 if ($winrm_cert_expirations)
 {
     # this fact was renamed from ansible_winrm_certificate_expires due to collision with ansible_winrm_X connection var pattern
-    Set-Attr $result.ansible_facts "ansible_win_rm_certificate_expires" $winrm_cert_expiry[0].NotAfter.ToString("yyyy-MM-dd HH:mm:ss")
+    Set-Attr $result.ansible_facts "ansible_win_rm_certificate_expires" $winrm_cert_expirations[0].NotAfter.ToString("yyyy-MM-dd HH:mm:ss")
 }
 
 $PendingReboot = Get-PendingRebootStatus
